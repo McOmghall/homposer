@@ -5,6 +5,11 @@ import qualified Data.List (elem)
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 
+data NonNormalizedProbability a = NonNormalizedTransition (Double, a, a)
+data Probability a = Transition (Double, a, a)
+data MarkovMap a = NonNormalizedNode [(a, [NonNormalizedProbability a])] | Node [(a, [Probability a])]
+
+
 upThird :: Mode -> PitchClass -> PitchClass
 upThird Major x = 
   let notes = Map.fromList $ zip [C,Cs,D,Ds,E,F,Fs,G,Gs,A,As,B] [E,F,Fs,G,Gs,A,As,B,C,Cs,D,Ds]
@@ -14,7 +19,7 @@ upThird Minor x =
   in Maybe.fromJust $ Map.lookup x notes
 
 allMajorChords :: [Music Pitch]
-allMajorChords = map (uncurry transpose) $ zip [0..12] (repeat ((c 4 qn) :=: (e 4 qn) :=: (g 4 qn)))
+allMajorChords = map (uncurry transpose) $ zip [0..] $ map (chord) $ repeat $ map (note sn) $ take 3 $ arpeggiate Major (C, 4)
 
 arpeggiate :: Mode -> Pitch -> [Pitch]
 arpeggiate Major (pc, octv) =
@@ -27,8 +32,10 @@ arpeggiate Minor (pc, octv) =
 exampleArpeggiation :: [Music Pitch]
 exampleArpeggiation = map (note sn) $ (C, 4):arpeggiate Major (C, 4)
 
+diminishedChord :: [Music Pitch]
+diminishedChord = map (uncurry transpose) $ zip ([0..]) $ repeat $ chord $ map (note sn) $ standardDimChord
+  where standardDimChord = take 4 $ zip (iterate (upThird Minor) C) (repeat 4)
+
 main :: IO ()
-main = 
-  let arpeggios = take 20 exampleArpeggiation
-  in do
-  play . line . concat $ [allMajorChords, arpeggios]
+main = do
+  play . line . concat $ [(take 12 diminishedChord), (take 12 allMajorChords), (take 40 exampleArpeggiation)]
