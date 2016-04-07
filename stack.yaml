@@ -12,6 +12,7 @@ packages:
     commit: 7a5e865406dc8dc8d2bd730b7625656fc4c80036
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps: 
+  - containers-0.5.6.2
   - heap-0.6.0
   - PortMidi-0.1.5.2
   - arrows-0.4.4.1
