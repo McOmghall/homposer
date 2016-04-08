@@ -36,6 +36,14 @@ diminishedChord :: [Music Pitch]
 diminishedChord = map (uncurry transpose) $ zip ([0..]) $ repeat $ chord $ map (note sn) $ standardDimChord
   where standardDimChord = take 4 $ zip (iterate (upThird Minor) C) (repeat 4)
 
+simpleComp :: [Music Pitch]
+simpleComp =
+  let rithmBass = [wn, wn, wn, wn]
+      notesBass = [(C, 3), (F, 3), (B, 3), (G, 3)]
+      notesPerBass = 8
+      process (dur, (bas, mel)) = chord [note dur bas, transpose 12 $ Euterpea.line $ map (note $ dur/(toRational notesPerBass)) mel]
+  in map process $ zip rithmBass [(x, (take notesPerBass . arpeggiate Major) x) | x <- notesBass]
+
 main :: IO ()
 main = do
-  play . line . concat $ [(take 12 diminishedChord), (take 12 allMajorChords), (take 40 exampleArpeggiation)]
+  play . line . concat $ [simpleComp, [chord [note wn (C, 3), note wn (C, 4)]]]
