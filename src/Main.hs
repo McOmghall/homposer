@@ -9,7 +9,6 @@ data NonNormalizedProbability a = NonNormalizedTransition (Double, a, a)
 data Probability a = Transition (Double, a, a)
 data MarkovMap a = NonNormalizedNode [(a, [NonNormalizedProbability a])] | Node [(a, [Probability a])]
 
-
 upThird :: Mode -> PitchClass -> PitchClass
 upThird Major x = 
   let notes = Map.fromList $ zip [C,Cs,D,Ds,E,F,Fs,G,Gs,A,As,B] [E,F,Fs,G,Gs,A,As,B,C,Cs,D,Ds]
@@ -44,6 +43,13 @@ simpleComp =
       process (dur, (bas, mel)) = chord [note dur bas, transpose 12 $ Euterpea.line $ map (note $ dur/(toRational notesPerBass)) mel]
   in map process $ zip rithmBass [(x, (take notesPerBass . arpeggiate Major) x) | x <- notesBass]
 
+
 main :: IO ()
-main = do
-  play . line . concat $ [simpleComp, [chord [note wn (C, 3), note wn (C, 4)]]]
+main =
+  let motif    = c 4 en :+: g 4 en :+: c 5 en :+: g 5 en
+      motif2   = motif :+: transpose 3 motif
+      motif3   = tempo (1/5) $ transpose (-5) (invert motif)
+      motif4   = tempo (1/10) $ transpose (-12) (retro motif)
+      miniline = motif :+: motif2 :+: invert motif2 :+: retro motif2
+      result = forever miniline :=: forever motif3 :=: forever motif4
+  in do play (cut (6 * wn) result)
